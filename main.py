@@ -26,31 +26,30 @@ def load_image(filename):
     return ImageTk.PhotoImage(Image.open(path).resize((config['width'], config['height']), Image.ANTIALIAS))
 
 bg_img = load_image("gura_idle.png")
-mouth_a = load_image("mouth_a.png")
-mouth_b = load_image("mouth_b.png")
 
-# 初始狀態
+# 嘗試載入嘴型圖（可選）
+try:
+    mouth_a = load_image("mouth_a.png")
+    mouth_b = load_image("mouth_b.png")
+    use_mouth = True
+except:
+    use_mouth = False
+
+# 初始圖層
 label = tk.Label(root, image=bg_img, bg=config["transparent_color"])
 label.place(x=0, y=0)
 
-# 飄浮動畫
+# 漂浮動畫
 def float_animation():
     y = random.randint(-2, 2)
     x = root.winfo_x()
     root.geometry(f"+{x}+{config['y'] + y}")
     root.after(300, float_animation)
 
-# 語音播放
-def play_voice():
-    voices = os.listdir("voice")
-    if voices:
-        file = random.choice(voices)
-        pygame.mixer.music.load(os.path.join("voice", file))
-        pygame.mixer.music.play()
-        animate_mouth()
-
-# 嘴型動畫
+# 嘴型動畫（如果有的話）
 def animate_mouth():
+    if not use_mouth:
+        return
     def swap(n):
         if n <= 0:
             label.config(image=bg_img)
@@ -59,7 +58,16 @@ def animate_mouth():
         root.after(200, swap, n - 1)
     swap(6)
 
-# 點一下播放語音
+# 播放語音
+def play_voice():
+    voices = os.listdir("voice")
+    if voices:
+        file = random.choice(voices)
+        pygame.mixer.music.load(os.path.join("voice", file))
+        pygame.mixer.music.play()
+        animate_mouth()
+
+# 點擊播放語音
 label.bind("<Button-1>", lambda e: play_voice())
 
 # 拖曳功能
